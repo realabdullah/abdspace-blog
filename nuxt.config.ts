@@ -18,6 +18,7 @@ export default defineNuxtConfig({
 	runtimeConfig: {
 		public: {
 			siteUrl: process.env.NUXT_SITE_URL || "https://blog.abdspace.xyz",
+			studioConfigured: Boolean(process.env.STUDIO_GITHUB_CLIENT_ID && process.env.STUDIO_GITHUB_CLIENT_SECRET),
 		},
 	},
 	content: {
