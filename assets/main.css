@@ -5,6 +5,8 @@
 	--color-ink: #171714;
 	--color-coral: #e65d43;
 	--color-lime: #c9db65;
+	--color-code-surface: #20201d;
+	--color-code-ink: #f2f0e9;
 	--font-sans: "Manrope", sans-serif;
 	--font-mono: "DM Mono", monospace;
 }
@@ -13,6 +15,8 @@ html.dark {
 	--color-paper: #171714;
 	--color-ink: #f2f0e9;
 	--color-coral: #f2765b;
+	--color-code-surface: #0e0e0d;
+	--color-code-ink: #f7f5ee;
 }
 html {
 	scroll-behavior: smooth;
@@ -30,6 +34,96 @@ body {
 	background: var(--color-coral);
 	color: var(--color-paper);
 }
+
+.prose-writing {
+	color: color-mix(in srgb, var(--color-ink) 78%, transparent);
+	text-wrap: pretty;
+}
+.prose-writing p {
+	margin: 1.5rem 0;
+}
+.prose-writing a {
+	color: var(--color-coral);
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 4px;
+}
+.prose-writing h2,
+.prose-writing h3 {
+	color: var(--color-ink);
+	font-weight: 500;
+	letter-spacing: -0.05em;
+}
+.prose-writing h2 {
+	margin: 3rem 0 1rem;
+	font-size: 1.875rem;
+}
+.prose-writing h3 {
+	margin: 2.5rem 0 1rem;
+	font-size: 1.5rem;
+}
+.prose-writing ul,
+.prose-writing ol {
+	margin: 1.5rem 0;
+	padding-left: 1.5rem;
+}
+.prose-writing li {
+	margin: 0.5rem 0;
+}
+.prose-writing blockquote {
+	margin: 2rem 0;
+	border-left: 2px solid var(--color-coral);
+	padding-left: 1.25rem;
+	color: color-mix(in srgb, var(--color-ink) 64%, transparent);
+	font-style: italic;
+}
+.prose-writing :not(pre) > code {
+	border: 1px solid color-mix(in srgb, var(--color-ink) 14%, transparent);
+	border-radius: 0.4rem;
+	background: color-mix(in srgb, var(--color-ink) 8%, transparent);
+	padding: 0.15rem 0.4rem;
+	color: var(--color-ink);
+	font-family: var(--font-mono);
+	font-size: 0.86em;
+}
+.prose-writing pre {
+	margin: 2.25rem 0;
+	max-width: 100%;
+	overflow-x: auto;
+	border: 1px solid color-mix(in srgb, var(--color-code-ink) 13%, transparent);
+	border-radius: 1rem;
+	background: var(--color-code-surface);
+	box-shadow: 0 18px 45px color-mix(in srgb, var(--color-ink) 16%, transparent);
+	color: var(--color-code-ink);
+	font-family: var(--font-mono);
+	font-size: 0.82rem;
+	line-height: 1.7;
+	tab-size: 2;
+}
+.prose-writing pre::before {
+	content: "";
+	display: block;
+	height: 0.5rem;
+	margin: -0.05rem 0 1rem;
+	border-bottom: 1px solid color-mix(in srgb, var(--color-code-ink) 12%, transparent);
+}
+.prose-writing pre code {
+	display: block;
+	background: transparent;
+	padding: 0 1.25rem 1.25rem;
+	color: inherit;
+	font: inherit;
+}
+.prose-writing img {
+	height: auto;
+	max-width: 100%;
+	outline: 1px solid rgba(0, 0, 0, 0.1);
+	outline-offset: 2px;
+}
+html.dark .prose-writing img {
+	outline-color: rgba(255, 255, 255, 0.1);
+}
+
 @media (prefers-reduced-motion: reduce) {
 	*,
 	*::before,
