@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /_studio
+
+Sitemap: https://blog.abdspace.xyz/sitemap.xml

@@ -1,0 +1,18 @@
+name: Update portfolio
+
+on:
+    push:
+        branches: [master]
+        paths:
+            - "content/blog/**"
+
+jobs:
+    deploy-portfolio:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Trigger portfolio deployment
+              env:
+                  VERCEL_DEPLOY_HOOK_URL: ${{ secrets.PORTFOLIO_VERCEL_DEPLOY_HOOK_URL }}
+              run: |
+                  test -n "$VERCEL_DEPLOY_HOOK_URL"
+                  curl --fail --silent --show-error --request POST "$VERCEL_DEPLOY_HOOK_URL"
