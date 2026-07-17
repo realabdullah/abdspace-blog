@@ -32,7 +32,11 @@ export default defineNuxtConfig({
 		},
 	},
 	nitro: {
-		prerender: { routes: ["/", "/feed.xml", "/sitemap.xml"], crawlLinks: true },
+		prerender: {
+			routes: ["/", "/feed.xml", "/sitemap.xml"],
+			crawlLinks: true,
+			ignore: ["/admin", "/_studio/**", "/__nuxt_studio/**"],
+		},
 	},
 	vite: { plugins: [tailwindcss()] },
 	fonts: {
