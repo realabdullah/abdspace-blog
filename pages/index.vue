@@ -1,9 +1,14 @@
 <script setup lang="ts">
-const { data: posts } = await useAsyncData("blog-posts", () => queryCollection("blog").order("createdAt", "DESC").all());
+const { data: posts } = await useAsyncData("writing-posts", () => queryCollection("writings").order("createdAt", "DESC").all());
 useSeoMeta({
 	title: "Writings — Abdullahi Odesanmi",
 	description: "Notes on frontend engineering, tools, experiments and what I’m learning.",
+	ogTitle: "Writings — Abdullahi Odesanmi",
+	ogDescription: "Notes on frontend engineering, tools, experiments and what I’m learning.",
+	ogType: "website",
+	twitterCard: "summary_large_image",
 });
+defineOgImage("Writings", { title: "Writings & observations", description: "Notes on frontend engineering, tools, experiments and what I’m learning.", section: "Writings" });
 </script>
 
 <template>

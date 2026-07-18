@@ -1,4 +1,4 @@
-# Abdspace Blog
+# Abdspace Writings
 
 Personal writing site.
 

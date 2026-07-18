@@ -11,9 +11,9 @@ const postSchema = z.object({
 
 export default defineContentConfig({
 	collections: {
-		blog: defineCollection({
+		writings: defineCollection({
 			type: "page",
-			source: "blog/*.md",
+			source: "writings/*.md",
 			schema: postSchema,
 		}),
 	},

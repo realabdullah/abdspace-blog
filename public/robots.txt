@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin
 Disallow: /_studio
 
-Sitemap: https://blog.abdspace.xyz/sitemap.xml
+Sitemap: https://writings.abdspace.xyz/sitemap.xml

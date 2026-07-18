@@ -12,12 +12,12 @@ export default defineNuxtConfig({
 		},
 	},
 	site: {
-		url: process.env.NUXT_SITE_URL || "https://blog.abdspace.xyz",
+		url: process.env.NUXT_SITE_URL || "https://writings.abdspace.xyz",
 		name: "Abdullahi Odesanmi — Writings",
 	},
 	runtimeConfig: {
 		public: {
-			siteUrl: process.env.NUXT_SITE_URL || "https://blog.abdspace.xyz",
+			siteUrl: process.env.NUXT_SITE_URL || "https://writings.abdspace.xyz",
 			studioConfigured: Boolean(process.env.STUDIO_GITHUB_CLIENT_ID && process.env.STUDIO_GITHUB_CLIENT_SECRET),
 		},
 	},

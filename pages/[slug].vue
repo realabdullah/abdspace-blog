@@ -1,9 +1,14 @@
 <script setup lang="ts">
 const route = useRoute();
 const slug = route.params.slug as string;
-const { data: post } = await useAsyncData(`post-${slug}`, () => queryCollection("blog").where("slug", "=", slug).first());
+const { data: post } = await useAsyncData(`post-${slug}`, () => queryCollection("writings").where("slug", "=", slug).first());
+const { data: writings } = await useAsyncData("writing-order", () => queryCollection("writings").order("createdAt", "DESC").all());
 if (!post.value) throw createError({ statusCode: 404, statusMessage: "Writing not found" });
-const canonicalUrl = `https://blog.abdspace.xyz/${slug}`;
+const canonicalUrl = `https://writings.abdspace.xyz/${slug}`;
+const writingIndex = computed(() => {
+	const index = writings.value?.findIndex((writing) => writing.slug === post.value?.slug) ?? -1;
+	return index >= 0 ? String(index + 1).padStart(2, "0") : "--";
+});
 useSeoMeta({
 	title: `${post.value.title} — Abdullahi Odesanmi`,
 	description: post.value.description,
@@ -35,35 +40,35 @@ useHead({
 		},
 	],
 });
+defineOgImage("Writings", { title: post.value.title, description: post.value.description, section: "Writings" });
 </script>
 
 <template>
-	<div class="mx-auto min-h-screen max-w-[1440px] px-6 sm:px-10 lg:px-20">
-		<header class="flex h-20 items-center justify-between border-b border-ink/15 font-mono text-[10px] tracking-[0.12em] uppercase">
+	<div class="article-page mx-auto min-h-screen max-w-[1440px] px-6 sm:px-10 lg:px-20">
+		<header class="article-nav flex h-20 items-center justify-between border-b font-mono text-[10px] tracking-[0.12em] uppercase">
 			<NuxtLink to="/" class="transition-colors hover:text-coral">← Writings</NuxtLink
-			><NuxtLink to="https://www.abdspace.xyz" class="text-lg font-semibold tracking-[-0.035em]">ABD<span class="ml-0.5 text-coral">·</span></NuxtLink>
+			><NuxtLink to="https://www.abdspace.xyz" class="article-brand text-lg font-semibold tracking-[-0.035em]">ABD<span class="ml-0.5 text-coral">·</span></NuxtLink>
 		</header>
-		<main class="grid min-w-0 gap-12 py-16 sm:py-24 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-20 lg:py-28">
-			<aside class="font-mono text-[10px] tracking-[0.12em] text-stone-500 uppercase">
-				(01) / Journal<span class="mt-4 block">{{ post.readTime }} min read</span>
-			</aside>
-			<article class="min-w-0 max-w-3xl">
-				<div class="font-mono text-[10px] tracking-[0.1em] text-stone-500 uppercase">
-					{{ formatDate(post.createdAt) }}
+		<main class="article-main min-w-0">
+			<header class="article-hero">
+				<div class="article-kicker font-mono text-[10px] tracking-[0.12em] uppercase">({{ writingIndex }}) / Writings</div>
+				<div class="article-intro">
+					<div class="article-meta font-mono text-[10px] tracking-[0.1em] uppercase">
+						<span>{{ formatDate(post.createdAt) }}</span
+						><span>·</span><span>{{ post.readTime }} min read</span>
+					</div>
+					<h1>{{ post.title }}</h1>
+					<p class="article-summary">{{ post.brief }}</p>
 				</div>
-				<h1 class="mt-6 text-[clamp(2.65rem,7vw,7rem)] leading-[0.92] font-medium tracking-[-0.08em] break-words">
-					{{ post.title }}
-				</h1>
-				<p class="mt-10 border-l-2 border-coral pl-5 text-base leading-relaxed text-stone-500">
-					{{ post.brief }}
-				</p>
-				<div class="my-14 border-t border-ink/15"></div>
-				<div class="prose-writing max-w-none min-w-0 text-[15px] leading-[1.85] text-stone-700">
+			</header>
+			<div class="article-content-grid">
+				<aside class="article-side-note font-mono text-[10px] tracking-[0.1em] uppercase">Read slowly.<br />Take what’s useful.</aside>
+				<article class="article-body">
 					<ContentRenderer :value="post" />
-				</div>
-			</article>
+				</article>
+			</div>
 		</main>
-		<footer class="flex min-h-20 items-center justify-between border-t border-ink/15 py-5 font-mono text-[10px] tracking-[0.1em] text-stone-500 uppercase">
+		<footer class="article-footer flex min-h-20 items-center justify-between border-t py-5 font-mono text-[10px] tracking-[0.1em] uppercase">
 			<NuxtLink to="/">← All writings</NuxtLink><NuxtLink to="https://www.abdspace.xyz/#contact">Start a conversation ↗</NuxtLink>
 		</footer>
 	</div>

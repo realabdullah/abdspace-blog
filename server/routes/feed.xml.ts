@@ -1,6 +1,6 @@
 export default defineEventHandler(async (event) => {
-	const posts = await queryCollection(event, "blog").order("createdAt", "DESC").all();
-	const baseUrl = useRuntimeConfig().public.siteUrl || "https://blog.abdspace.xyz";
+	const posts = await queryCollection(event, "writings").order("createdAt", "DESC").all();
+	const baseUrl = useRuntimeConfig().public.siteUrl || "https://writings.abdspace.xyz";
 	const items = posts
 		.map(
 			(post) =>
