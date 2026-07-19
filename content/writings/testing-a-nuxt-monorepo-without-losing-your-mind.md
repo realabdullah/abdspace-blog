@@ -2,8 +2,8 @@
 title: Testing a Nuxt Monorepo Without Losing Your Mind
 description: Centralised configs, isolated component tests, and reliable E2E with Vitest & Playwright, without the mocking headache.
 brief: Testing a standard, single-package app is pretty straightforward. But a Nuxt monorepo? That can get messy very fast. When you're dealing with multiple shared packages...
-readTime: "10"
 createdAt: 2026-07-15T12:12:54.476Z
+readTime: "10"
 slug: testing-a-nuxt-monorepo-without-losing-your-mind
 ---
 
@@ -53,14 +53,16 @@ Just make sure these are installed as `devDependencies⁠` at your monorepo root
 
 Here is where the magic happens, as mentioned earlier, I'm setting up in the root, so I wrote one single dynamic config to rule all the apps and packages.
 
-The idea here is strict separation of concerns. I split the test runner into two distinct project types for every single workspace:
+The idea here is strict separation of concerns. I split the test runner into three distinct project types for every single workspace based on filename suffix:
 
 1. Unit Tests (`*.unit.spec.ts`): Runs purely in Node. Super fast, meant for business logic, utilities and composables.
 2. Component Tests (`*.component.spec.ts`): Runs in `happy-dom` with the Vue plugin enabled. Meant for testing actual `.vue` files and UI behaviour.
+3. Nuxt Tests (`*.nuxt.spec.ts`): Runs in a `nuxt` environment. For components tightly coupled to the Nuxt framework (auto-imports and all that).
 
 Here is the `vitest.config.ts` in its full glory lol:
 
 ```typescript
+import { defineVitestProject } from "@nuxt/test-utils/config";
 import vue from "@vitejs/plugin-vue";
 import { resolve } from "node:path";
 import { defineConfig } from "vitest/config";
@@ -76,7 +78,7 @@ const workspaces = [
   { name: "ui-layer", root: uiLayerRoot },
 ];
 
-export default defineConfig(() => {
+export default defineConfig(async () => {
   const unitProjects = workspaces.map(({ name, root }) => ({
     extends: true as const,
     root,
@@ -114,30 +116,51 @@ export default defineConfig(() => {
     },
   }));
 
+  const nuxtProjects = [];
+  if (process.env.VITEST_NUXT === "true") {
+    for (const { name, root } of workspaces) {
+      nuxtProjects.push(
+        await defineVitestProject({
+          test: {
+            name: `nuxt-${name}`,
+            include: ["**/*.nuxt.spec.ts"],
+            environment: "nuxt",
+            environmentOptions: {
+              nuxt: {
+                rootDir: root,
+                domEnvironment: "happy-dom",
+              },
+            },
+          },
+        })
+      );
+    }
+  }
+
   return {
     test: {
       globals: true,
       clearMocks: true,
       restoreMocks: true,
-      projects: [...unitProjects, ...componentProjects],
+      projects: [...unitProjects, ...componentProjects, ...nuxtProjects],
       coverage: {
         provider: "v8" as const,
         reporter: ["text", "html", "lcov"],
         reportsDirectory: "./coverage",
         exclude: [
-          "**/*.unit.spec.ts", 
-          "**/*.component.spec.ts", 
-          "**/*.d.ts", 
-          "**/.nuxt/**", 
-          "**/.output/**", 
-          "**/node_modules/**", 
-          "**/*.config.*", 
-          "test/**"
-        ],
+          "**/*.unit.spec.ts",
+          "**/*.component.spec.ts",
+          "**/*.d.ts",
+          "**/.nuxt/**",
+          "**/.output/**",
+          "**/node_modules/**",
+          "**/*.config.*",
+          "test/**"],
       },
     },
   };
 });
+
 ```
 
 **Why this works so well**
@@ -211,31 +234,27 @@ Look at the imports. Notice what's missing? **Nuxt.** This is a pure Vue compone
 
 By choosing to test these presentational components in isolation and focusing strictly on what the user actually sees on the screen, I avoid dealing with high maintenance tests altogether..
 
-**What about Nuxt's auto-imports?**
+**Phase 3:** The Framework Gray Area (Nuxt Auto-Imports)
 
-If you’re looking at that `vitest.config.ts&#x60; and thinking, *"How does this handle components that actually use Nuxt stuffs like*&#x20;`useFetch`*,*&#x20;`useRoute`*, or*&#x20;`useRuntimeConfig`*?"*
+If you’re looking at that `vitest.config.ts&#x60; and thinking, *"Hmmmnn, I see a nuxtProjects block. How does this handle components that actually use Nuxt stuffs like*&#x20;`useFetch`*,*&#x20;`useRoute`*, or*&#x20;`useRuntimeConfig`*?"*
 
-The honest answer? It doesn't.
+Testing these components usually forces you into a terrible compromise. You might be spending hours trying to manually mock the router, fetch interceptors, auto-imports, etc, descending into "mocking hell" (if that's a thing), or you boot up a full Nuxt context for every single standard test, making the fast unit tests to be annoyingly slow.
 
-I really just don’t want to test those components in Vitest. And honestly, I don't think you should either.
+I don't want to do any of that. This is exactly what the `*.nuxt.spec.ts` layer solves.
 
-Trying to component-test "smart" components that are tightly coupled to frameworks could be a trap. The moment you try to run them in Vitest, you'll be having `ReferenceError: useFetch is not defined`.
-
-To fix that, you have to mock the router. Then mock the fetch interceptors. Then mock the whole Nuxt context. By the time you write 50 lines of setup code just to get a single button to render, **you aren't testing your component anymore, you are just testing your mocks.** If Nuxt changes how `useFetch` behaves under the hood in a minor update, your tests will instantly break, even if the actual app runs perfectly fine in the browser. It’s just a massive waste of time in my opinion.
+Using `@nuxt/test-utils/vitest`, I spinned up a lightweight Nuxt context natively within Vitest. Composables, plugins, and routing just work, completely mock-free. Because I isolate these tests by filename suffix and gate them behind an environment variable, they don't bog down the rest of my standard unit tests. I test the Nuxt logic natively, without writing 50 lines of setup code just to get a component to render.
 
 **Enter Playwright**
 
-This is why my setup is split. I let Vitest do what it’s actually good at: testing pure business logic and the dumb UI components in my shared layer. It does this in milliseconds without any overhead.
+So, if Vitest is handling pure logic, isolated components, and even Nuxt-coupled components, what is left?
 
-But for the framework-heavy components? That is a job for Playwright.
+Actual user journeys.
 
-Playwright doesn't care about mocking `useFetch` because it actually boots up the real Nuxt server in a real browser. You test the app exactly how a user interacts with it, and you don't have to write a single mock to do it.
+Vitest is good at verifying that a component works in isolation. But verifying that a user can successfully click through your flow, log into the dashboard, and submit a form across multiple routes? That is a job for Playwright.
+
+Playwright boots up the real Nuxt server in a real browser. You test the app exactly how a user interacts with it across a full end-to-end flow.
 
 **Phase 3: The Playwright Setup**
-
-So if I'm not testing Nuxt heavy components in Vitest, how do I actually test them?
-
-I run them in a real browser using Playwright.
 
 The codebase has multiple apps sitting in the `apps/` directory. I'm definitely not going to be opening three terminal tabs to manually boot up dev servers every time I want to run E2E tests.
 
@@ -305,10 +324,12 @@ I don't have to manage any local ports, I don't have to coordinate server lifecy
 
 Setting up tests in a monorepo usually feels like fighting against your tools. But by letting each tool do exactly what it was built for, testing actually becomes invisible.
 
-- **Vitest** handles the pure logic and presentational UI components in milliseconds.
-- **Playwright** boots up the Nuxt apps and tests them like a real user.
+- **Vitest (Node)** handles pure logic in milliseconds.
+- **Vitest (Happy-DOM)** handles framework-agnostic presentational components instantly.
+- **Vitest (Nuxt)** handles framework-coupled components natively, without the mocking hell.
+- **Playwright** boots up the apps to test full end-to-end user journeys like a real browser.
 - **The Root Configs** act as the orchestrators, meaning I don't have to jump between a terminal tabs to get confidence in my code.
 
-I don't think I need 100% test coverage on every single layer. I just need tests that are fast, reliable, and actually catch bugs without forcing me to write 50 lines of mocks.
+I don't think I need 100% test coverage on every single layer. I just need tests that are fast, reliable, and actually catch bugs without forcing me to write 50 lines of setup code just to render a button. By drawing hard boundaries between Node, isolated UI, simulated Nuxt contexts, and Playwright, testing actually feels productive again.
 
-**At what point do you give up on unit testing a component and just let E2E handle it? Do you mock out your framework utilities in Vitest, or push them straight to Playwright? Let me know what you think.**
+How are you handling your Nuxt monorepos? Have you adopted a layered approach to your testing environments, or are you tackling the configuration differently? Let me know what you think.
