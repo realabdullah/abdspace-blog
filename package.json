@@ -22,6 +22,7 @@
 		"@resvg/resvg-js": "^2.6.2",
 		"@tailwindcss/vite": "^4.1.4",
 		"@takumi-rs/core": "2.0.0-rc.16",
+		"@vercel/analytics": "^2.0.1",
 		"better-sqlite3": "^12.9.0",
 		"nuxt": "^3.21.4",
 		"nuxt-og-image": "^6.7.2",
