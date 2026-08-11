@@ -1,7 +1,7 @@
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineNuxtConfig({
-	modules: ["@nuxt/content", "@nuxt/eslint", "@nuxt/fonts", "@nuxt/image", "@nuxt/icon", "nuxt-og-image", "nuxt-studio"],
+	modules: ["@nuxt/content", "@nuxt/eslint", "@nuxt/fonts", "@nuxt/image", "@nuxt/icon", "nuxt-og-image", "nuxt-studio", "@vercel/analytics"],
 	css: ["~/assets/main.css"],
 	devtools: { enabled: true },
 	app: {
